@@ -1,0 +1,12 @@
+# Task ID: 11
+# Title: Interactive Cluster Creation Wizard
+# Status: done
+# Dependencies: None
+# Priority: low
+# Description: CLI tool that guides users through cluster creation
+# Details:
+Files: /cmd/pgo-wizard/main.go (200 lines), /cmd/pgo-wizard/wizard/wizard.go (700 lines)
+Three presets, smart defaults, validation
+
+# Test Strategy:
+Unit tests for wizard logic, integration tests for YAML generation

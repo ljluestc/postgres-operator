@@ -1,0 +1,12 @@
+# Task ID: 8
+# Title: Connection Pool Analytics
+# Status: done
+# Dependencies: None
+# Priority: medium
+# Description: Comprehensive pgBouncer monitoring with auto-tuning recommendations
+# Details:
+File: /internal/pgbouncer/analytics.go (900 lines)
+9 pool metrics, queuing theory-based optimization
+
+# Test Strategy:
+Unit tests for pool statistics collection, integration tests with pgBouncer

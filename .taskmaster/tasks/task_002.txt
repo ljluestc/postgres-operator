@@ -1,0 +1,12 @@
+# Task ID: 2
+# Title: Enhanced Backup Metrics and Monitoring
+# Status: done
+# Dependencies: None
+# Priority: high
+# Description: Comprehensive Prometheus metrics for backup operations
+# Details:
+File: /internal/pgbackrest/metrics.go (400 lines)
+10 Prometheus metrics implemented for backup monitoring
+
+# Test Strategy:
+Metrics collection tests, Prometheus integration tests

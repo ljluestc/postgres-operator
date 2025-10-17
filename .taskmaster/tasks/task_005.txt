@@ -1,0 +1,12 @@
+# Task ID: 5
+# Title: FIPS Mode Support
+# Status: done
+# Dependencies: None
+# Priority: high
+# Description: FIPS 140-2 compliance support for regulated environments
+# Details:
+File: /internal/fips/fips.go (650 lines)
+FIPS-compliant cryptography, auto-detection, compliance reporting
+
+# Test Strategy:
+Unit tests for FIPS validation, integration tests in FIPS environment, compliance testing

@@ -93,3 +93,7 @@ func TestPostgreSQLParameters(t *testing.T) {
 		assert.Assert(t, strings.Contains(libs, "daisy"))
 	})
 }
+
+// NOTE: DisableMonitoringUserInPostgres and EnableExporterInPostgreSQL
+// require postgres.Executor which is a function type with methods.
+// These are better tested as integration tests with a real database connection.

@@ -1,0 +1,12 @@
+# Task ID: 13
+# Title: Cross-Region Backup Replication
+# Status: done
+# Dependencies: 1, 2, 12
+# Priority: medium
+# Description: Backup replication across multiple regions for disaster recovery
+# Details:
+File: /internal/pgbackrest/replication.go (750 lines)
+5 replication metrics, async and sync modes
+
+# Test Strategy:
+Unit tests for replication logic, integration tests with cloud providers

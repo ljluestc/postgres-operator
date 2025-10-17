@@ -1,0 +1,55 @@
+# Task ID: 14
+# Title: Documentation and Testing
+# Status: in-progress
+# Dependencies: 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13
+# Priority: high
+# Description: Complete documentation and comprehensive testing for all features
+# Details:
+Create user-facing documentation, operator guides, add unit tests (80% coverage), integration tests, E2E tests
+
+# Test Strategy:
+Achieve 80% code coverage, integration tests for all features, E2E tests for critical paths
+
+# Subtasks:
+## 1. Add Unit Tests for All Features [pending]
+### Dependencies: None
+### Description: Achieve 80% code coverage with comprehensive unit tests
+### Details:
+Target 80% coverage across all 13 implemented features
+
+## 2. Create Integration Tests [pending]
+### Dependencies: 14.1
+### Description: Integration tests for Kubernetes API interactions and PostgreSQL connections
+### Details:
+Test Kubernetes API interactions, PostgreSQL connections, pgBackRest commands, Patroni API calls
+
+## 3. Create End-to-End Tests [pending]
+### Dependencies: 14.2
+### Description: E2E tests for critical workflows
+### Details:
+Full feature workflows, failover scenarios, backup and restore, scaling operations
+
+## 4. Write User-Facing Documentation [pending]
+### Dependencies: None
+### Description: Create comprehensive user documentation for all features
+### Details:
+User guides, configuration examples, troubleshooting guides
+
+## 5. Create Operator Guides [pending]
+### Dependencies: 14.4
+### Description: Operational documentation for running PGO in production
+### Details:
+Deployment guides, monitoring setup, alert configuration
+
+## 6. Create Grafana Dashboards [pending]
+### Dependencies: None
+### Description: Build Grafana dashboards for all metrics
+### Details:
+Backup monitoring, failover monitoring, query performance, connection pool dashboards
+
+## 7. Configure Prometheus Alert Rules [pending]
+### Dependencies: 14.6
+### Description: Set up comprehensive alerting rules
+### Details:
+Backup alerts, failover alerts, performance alerts, pool alerts
+

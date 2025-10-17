@@ -1,0 +1,12 @@
+# Task ID: 7
+# Title: Query Performance Insights
+# Status: done
+# Dependencies: None
+# Priority: medium
+# Description: pg_stat_statements integration for query performance analysis
+# Details:
+File: /internal/postgres/performance.go (850 lines)
+6 performance metrics, index analysis, automated recommendations
+
+# Test Strategy:
+Unit tests for metrics collection, integration tests with pg_stat_statements

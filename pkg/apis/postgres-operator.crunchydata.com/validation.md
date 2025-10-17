@@ -89,7 +89,7 @@ The `additionalProperties` property indicates that the keys are unknown; these f
 
 > [!IMPORTANT]
 > When possible, use [OpenAPI properties](#openapi-properties) rather than CEL rules.
-> The former do not affect the CRD [validation budget](#FIXME). <!-- https://imgur.com/CzpJn3j -->
+> The former do not affect the CRD [validation budget](#cel-validation-budget).
 
 ## Optional field syntax
 
@@ -190,3 +190,100 @@ Some schema changes are not ratcheted:
 
 [transition rules]: https://docs.k8s.io/tasks/extend-kubernetes/custom-resources/custom-resource-definitions#transition-rules
 [Validation ratcheting]: https://docs.k8s.io/tasks/extend-kubernetes/custom-resources/custom-resource-definitions#validation-ratcheting
+
+
+# CEL Validation Budget
+
+Kubernetes enforces computational limits on CEL validation rules to prevent excessive API server resource consumption. These limits are measured in platform-independent "cost units" that estimate execution complexity.
+
+## Why OpenAPI Properties Are Preferred
+
+**OpenAPI schema validation** (like `pattern`, `minimum`, `maximum`, `minLength`, etc.) **does not consume validation budget**. These validations are performed by the Kubernetes API server's schema validator without CEL evaluation overhead.
+
+**CEL rules** consume validation budget based on their complexity and the size of data they process. This creates two important limitations:
+
+### Two Types of Cost Limits
+
+1. **Estimated Cost Limit** (Compile-time)
+   - CEL statically computes the worst-case runtime cost of expressions
+   - Rules with poor estimated cost are rejected when the CRD is created
+   - Typically hit by O(n²) or worse operations over unbounded collections
+   - Example: nested loops over arrays without `maxItems` constraints
+
+2. **Runtime Cost Limit** (Evaluation-time)
+   - Tracks actual cost during CEL expression evaluation
+   - Halts execution if limit exceeded during API request validation
+   - Rarely hit if estimated cost limit is already satisfied
+   - Protects against pathological input data
+
+### Common Budget Errors
+
+When validation rules exceed budget, you'll see errors like:
+
+```
+CEL rule exceeded budget by more than 100x (try simplifying the rule,
+or adding maxItems, maxProperties, and maxLength where arrays, maps,
+and strings are used)
+```
+
+### Best Practices
+
+1. **Use OpenAPI validation when possible**
+   ```yaml
+   # Good: No CEL cost
+   pattern: ^[a-z0-9]([-a-z0-9]*[a-z0-9])?$
+   minimum: 1
+   maximum: 100
+   ```
+
+2. **Add size constraints to collections processed by CEL**
+   ```yaml
+   # Before: Unbounded cost
+   x-kubernetes-validations:
+     - rule: "self.items.all(x, x.value > 0)"
+
+   # After: Bounded cost
+   maxItems: 100
+   x-kubernetes-validations:
+     - rule: "self.items.all(x, x.value > 0)"
+   ```
+
+3. **Simplify complex CEL expressions**
+   - Break complex rules into multiple simpler rules
+   - Avoid nested comprehensions when possible
+   - Use early termination with `exists()` instead of `all()` where applicable
+
+4. **Add constraints to strings, arrays, and maps**
+   ```yaml
+   properties:
+     config:
+       type: object
+       maxProperties: 50  # Bounds iteration cost
+       additionalProperties:
+         type: string
+         maxLength: 1024  # Bounds string operation cost
+   ```
+
+### Cost Estimation Guidelines
+
+Operations have different costs:
+- Simple comparisons (`==`, `!=`, `<`, `>`): Low cost
+- String operations (`contains`, `matches`, `startsWith`): Proportional to string length
+- Array comprehensions (`all`, `exists`, `filter`, `map`): Proportional to array size
+- Nested operations: Multiplicative cost (O(n²) or worse)
+
+### When CEL Is Necessary
+
+Use CEL rules when validation requires:
+- Cross-field validation (`spec.replicas` must be less than `spec.maxReplicas`)
+- Conditional requirements (field X required if field Y is set)
+- Complex business logic that can't be expressed in OpenAPI
+- Transition rules using `oldSelf`
+
+In these cases, always add appropriate `maxItems`, `maxProperties`, and `maxLength` constraints to fields processed by the CEL rule.
+
+### References
+
+- [Common Expression Language in Kubernetes](https://kubernetes.io/docs/reference/using-api/cel/)
+- [CRD Validation Rules (Beta)](https://kubernetes.io/blog/2022/09/23/crd-validation-rules-beta/)
+- [CEL Cost Budget Issue](https://github.com/kubernetes/kubernetes/issues/121162)

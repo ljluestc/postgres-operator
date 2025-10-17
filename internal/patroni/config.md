@@ -81,7 +81,7 @@ $ python3
 - https://github.com/zalando/patroni/blob/v2.0.1/docs/SETTINGS.rst
 - https://github.com/zalando/patroni/blob/v2.0.1/docs/ENVIRONMENT.rst
 
-TODO: document PostgreSQL parameters separately...
+For detailed information about PostgreSQL parameter configuration, see [PostgreSQL Parameters Documentation](../postgres/parameters.md).
 
 # Client and Daemon configuration
 

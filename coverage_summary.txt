@@ -1,0 +1,36 @@
+ok  	github.com/crunchydata/postgres-operator/internal/bridge	1.280s	coverage: 79.9% of statements
+ok  	github.com/crunchydata/postgres-operator/internal/bridge/crunchybridgecluster	0.053s	coverage: 48.6% of statements
+ok  	github.com/crunchydata/postgres-operator/internal/collector	0.064s	coverage: 59.7% of statements
+ok  	github.com/crunchydata/postgres-operator/internal/config	0.037s	coverage: 93.3% of statements
+ok  	github.com/crunchydata/postgres-operator/internal/controller/pgupgrade	0.060s	coverage: 43.9% of statements
+ok  	github.com/crunchydata/postgres-operator/internal/controller/postgrescluster	0.115s	coverage: 26.5% of statements
+ok  	github.com/crunchydata/postgres-operator/internal/controller/runtime	0.560s	coverage: 64.0% of statements
+ok  	github.com/crunchydata/postgres-operator/internal/controller/standalone_pgadmin	0.062s	coverage: 39.4% of statements
+ok  	github.com/crunchydata/postgres-operator/internal/crd/validation	0.046s	coverage: [no statements]
+ok  	github.com/crunchydata/postgres-operator/internal/crd/validation/postgrescluster	0.045s	coverage: [no statements]
+ok  	github.com/crunchydata/postgres-operator/internal/dr	0.053s	coverage: 90.1% of statements
+ok  	github.com/crunchydata/postgres-operator/internal/feature	0.010s	coverage: 94.7% of statements
+ok  	github.com/crunchydata/postgres-operator/internal/fips	0.018s	coverage: 90.7% of statements
+ok  	github.com/crunchydata/postgres-operator/internal/initialize	0.011s	coverage: 100.0% of statements
+ok  	github.com/crunchydata/postgres-operator/internal/kubernetes	0.048s	coverage: 29.5% of statements
+ok  	github.com/crunchydata/postgres-operator/internal/logging	0.008s	coverage: 90.1% of statements
+ok  	github.com/crunchydata/postgres-operator/internal/naming	2.054s	coverage: 82.9% of statements
+ok  	github.com/crunchydata/postgres-operator/internal/patroni	0.081s	coverage: 97.3% of statements
+ok  	github.com/crunchydata/postgres-operator/internal/pgadmin	0.054s	coverage: 100.0% of statements
+ok  	github.com/crunchydata/postgres-operator/internal/pgaudit	0.066s	coverage: 100.0% of statements
+ok  	github.com/crunchydata/postgres-operator/internal/pgbackrest	9.997s	coverage: 73.5% of statements
+ok  	github.com/crunchydata/postgres-operator/internal/pgbouncer	6.212s	coverage: 74.0% of statements
+ok  	github.com/crunchydata/postgres-operator/internal/pgmonitor	0.038s	coverage: 31.1% of statements
+ok  	github.com/crunchydata/postgres-operator/internal/pki	0.160s	coverage: 100.0% of statements
+ok  	github.com/crunchydata/postgres-operator/internal/postgis	0.027s	coverage: 100.0% of statements
+ok  	github.com/crunchydata/postgres-operator/internal/postgres	0.102s	coverage: 77.8% of statements
+ok  	github.com/crunchydata/postgres-operator/internal/postgres/password	0.005s	coverage: 100.0% of statements
+ok  	github.com/crunchydata/postgres-operator/internal/registration	1.572s	coverage: 90.3% of statements
+ok  	github.com/crunchydata/postgres-operator/internal/shell	0.024s	coverage: 100.0% of statements
+ok  	github.com/crunchydata/postgres-operator/internal/testing/cmp	0.004s	coverage: 47.9% of statements
+	github.com/crunchydata/postgres-operator/internal/testing/events		coverage: 0.0% of statements
+ok  	github.com/crunchydata/postgres-operator/internal/testing/require	0.039s	coverage: 11.9% of statements
+ok  	github.com/crunchydata/postgres-operator/internal/text	0.003s	coverage: 100.0% of statements
+ok  	github.com/crunchydata/postgres-operator/internal/tracing	0.005s	coverage: 100.0% of statements
+ok  	github.com/crunchydata/postgres-operator/internal/upgradecheck	5.042s	coverage: 71.9% of statements
+ok  	github.com/crunchydata/postgres-operator/internal/util	0.024s	coverage: 100.0% of statements

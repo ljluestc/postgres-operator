@@ -1,0 +1,128 @@
+name: Coverage Enforcement
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+jobs:
+  enforce-coverage:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-go@v6
+        with: { go-version: stable }
+
+      - name: Install bc for coverage calculation
+        run: sudo apt-get update && sudo apt-get install -y bc
+
+      - name: Run Unit Tests with Coverage
+        run: |
+          go test -coverprofile=coverage.out -covermode=atomic -coverpkg=./... ./...
+
+      - name: Generate Coverage Report
+        run: |
+          go tool cover -func=coverage.out -o coverage.txt
+          go tool cover -html=coverage.out -o coverage.html
+
+      - name: Calculate Total Coverage
+        id: coverage
+        run: |
+          TOTAL_COVERAGE=$(go tool cover -func=coverage.out | grep total | awk '{print $3}' | sed 's/%//')
+          echo "total=${TOTAL_COVERAGE}" >> $GITHUB_OUTPUT
+          echo "Total Coverage: ${TOTAL_COVERAGE}%"
+
+      - name: Check Coverage Target (100%)
+        run: |
+          TOTAL_COVERAGE=${{ steps.coverage.outputs.total }}
+          TARGET=100
+
+          echo "========================================"
+          echo "  Coverage Enforcement Check"
+          echo "========================================"
+          echo "Total Coverage: ${TOTAL_COVERAGE}%"
+          echo "Target Coverage: ${TARGET}%"
+          echo ""
+
+          if (( $(echo "${TOTAL_COVERAGE} < ${TARGET}" | bc -l) )); then
+            echo "❌ FAILED: Coverage ${TOTAL_COVERAGE}% is below target ${TARGET}%"
+            echo ""
+            echo "Files with less than 100% coverage:"
+            echo "-----------------------------------"
+            awk < coverage.txt '$3 != "100.0%" && NR > 1 { print $1 ": " $3 }' | head -30
+            exit 1
+          else
+            echo "✅ SUCCESS: Coverage ${TOTAL_COVERAGE}% meets target ${TARGET}%"
+          fi
+
+      - name: Comment Coverage on PR
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const coverage = '${{ steps.coverage.outputs.total }}';
+            const target = 100;
+            const status = parseFloat(coverage) >= target ? '✅' : '❌';
+
+            const comment = `## ${status} Test Coverage Report
+
+            - **Total Coverage:** ${coverage}%
+            - **Target Coverage:** ${target}%
+            - **Status:** ${parseFloat(coverage) >= target ? 'PASSED' : 'FAILED'}
+
+            ${parseFloat(coverage) < target ? '⚠️ Coverage is below the 100% target. Please add more tests.' : '🎉 Coverage target met!'}
+            `;
+
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: comment
+            });
+
+      - name: Upload Coverage Report
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: |
+            coverage.html
+            coverage.txt
+            coverage.out
+          retention-days: 30
+
+      - name: Upload to Codecov
+        uses: codecov/codecov-action@v4
+        with:
+          files: ./coverage.out
+          flags: unittests
+          name: codecov-umbrella
+          fail_ci_if_error: true
+
+  integration-tests:
+    runs-on: ubuntu-24.04
+    needs: [enforce-coverage]
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-go@v6
+        with: { go-version: stable }
+
+      - name: Install envtest
+        run: |
+          go install sigs.k8s.io/controller-runtime/tools/setup-envtest@latest
+
+      - name: Setup envtest environment
+        run: |
+          ENVTEST_K8S_VERSION=1.30.x
+          echo "KUBEBUILDER_ASSETS=$(setup-envtest use ${ENVTEST_K8S_VERSION} --bin-dir /tmp/envtest-bins -p path)" >> $GITHUB_ENV
+
+      - name: Run Integration Tests
+        run: |
+          go test ./testing/integration/... -v -coverprofile=integration.coverage -covermode=atomic
+
+      - name: Upload Integration Coverage
+        uses: actions/upload-artifact@v4
+        with:
+          name: integration-coverage
+          path: integration.coverage
+          retention-days: 30

@@ -1,0 +1,12 @@
+# Task ID: 12
+# Title: Backup Encryption at Rest
+# Status: done
+# Dependencies: 1, 2
+# Priority: high
+# Description: AES-256-CBC encryption with multi-provider key management
+# Details:
+File: /internal/pgbackrest/encryption.go (700 lines)
+5 key providers: Secret, AWS KMS, GCP KMS, Azure Key Vault, HashiCorp Vault
+
+# Test Strategy:
+Unit tests for encryption/decryption, integration tests with key providers

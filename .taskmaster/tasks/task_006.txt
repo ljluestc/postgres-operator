@@ -1,0 +1,12 @@
+# Task ID: 6
+# Title: Disaster Recovery Drill Automation
+# Status: done
+# Dependencies: 1
+# Priority: high
+# Description: Automated DR testing on schedule with RTO measurement
+# Details:
+File: /internal/dr/drill.go (700 lines)
+Three drill types: full restore, PITR, data verification
+
+# Test Strategy:
+Unit tests for drill logic, integration tests for restore, E2E tests for full DR workflow

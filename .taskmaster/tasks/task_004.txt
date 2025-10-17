@@ -1,0 +1,12 @@
+# Task ID: 4
+# Title: Configuration Validation Framework
+# Status: done
+# Dependencies: None
+# Priority: high
+# Description: Pre-apply configuration validation with multi-level severity checking
+# Details:
+File: /internal/validation/cluster_validator.go (850 lines)
+10 validation rules covering resources, backups, HA, security, performance
+
+# Test Strategy:
+Unit tests for validation logic, integration tests for all rules

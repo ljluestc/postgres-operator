@@ -1,0 +1,12 @@
+# Task ID: 3
+# Title: Automated Secrets Rotation
+# Status: done
+# Dependencies: None
+# Priority: high
+# Description: Automatically rotate PostgreSQL passwords and TLS certificates
+# Details:
+File: /internal/controller/postgrescluster/secrets_rotation.go (550 lines)
+Zero-downtime rotation with FIPS-compliant password generation
+
+# Test Strategy:
+Unit tests for password generation, integration tests for rotation, E2E tests for certificate rotation

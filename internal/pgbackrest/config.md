@@ -105,18 +105,87 @@ For more information, please see
 
 ## Custom Configuration Support
 
-TODO(tjmoore4): Document custom configuration solution once implemented
+Custom pgBackRest configurations are supported through the PostgresCluster specification.
+Users can provide additional pgBackRest configuration options via the `spec.backups.pgbackrest.global`
+field, which accepts a map of pgBackRest configuration key-value pairs.
 
-Custom pgBackRest configurations is supported by using the `--config-include-path`
-flag with the desired pgBackRest command. This should point to the directory path
-where the `*.conf` file with the custom configuration is located.
+### Configuration Method
 
-This file will be added as a projected volume and must be formatted in the standard
-pgBackRest INI convention. Please note that any of the configuration settings listed
-above MUST BE CONFIGURED VIA THE POSTGRESCLUSTER SPEC so as to avoid errors.
+Custom configurations are merged with the operator-generated default configurations.
+All custom configuration options are placed in the `[global]` section of the pgBackRest
+configuration and will be applied cluster-wide across all pods and backup jobs.
 
-For more information, please see
-`https://pgbackrest.org/user-guide.html#quickstart/configure-stanza`.
+### Important Restrictions
+
+The following configuration settings are managed by the operator and MUST NOT be overridden
+in custom configurations to avoid conflicts and errors:
+
+**Global Section Settings:**
+- `log-path` - Managed per pod type (instance, repo host, backup jobs)
+- `repo<N>-path` - Automatically set for each repository
+- `repo<N>-host` - Set when using PVC-based repositories with a repo host
+- `repo<N>-host-type`, `repo<N>-host-ca-file`, `repo<N>-host-cert-file`, `repo<N>-host-key-file`, `repo<N>-host-user` - TLS settings for repo host
+- `repo<N>-type`, `repo<N>-<cloud>-<setting>` - Cloud repository settings (S3, GCS, Azure)
+- `archive-async` - Set to 'y' for PostgreSQL instances
+- `spool-path` - Set to `/pgdata/pgbackrest-spool` for PostgreSQL instances
+
+**Stanza Section Settings:**
+- `pg<N>-path` - PostgreSQL data directory path
+- `pg<N>-port` - PostgreSQL port
+- `pg<N>-socket-path` - PostgreSQL socket directory
+- `pg<N>-host`, `pg<N>-host-type`, `pg<N>-host-ca-file`, `pg<N>-host-cert-file`, `pg<N>-host-key-file` - TLS settings for PostgreSQL hosts
+- Settings related to encryption (when using `spec.dataSource`)
+
+### Usage Example
+
+```yaml
+apiVersion: postgres-operator.crunchydata.com/v1beta1
+kind: PostgresCluster
+metadata:
+  name: my-cluster
+spec:
+  backups:
+    pgbackrest:
+      global:
+        # Custom retention policy
+        repo1-retention-full: "14"
+        repo1-retention-full-type: "time"
+
+        # Compression settings
+        compress-type: "lz4"
+        compress-level: "3"
+
+        # Performance tuning
+        process-max: "4"
+        buffer-size: "4MiB"
+
+        # Backup from standby
+        backup-standby: "y"
+      repos:
+        - name: repo1
+          volume:
+            volumeClaimSpec:
+              accessModes: ["ReadWriteOnce"]
+              resources:
+                requests:
+                  storage: 20Gi
+```
+
+### Configuration File Locations
+
+The operator generates configuration files and mounts them at:
+- `/etc/pgbackrest/conf.d/` - Configuration directory
+- `/etc/pgbackrest/conf.d/~postgres-operator_*.conf` - Operator-generated configurations
+
+Files ending with `.conf` in `/etc/pgbackrest/conf.d/` are loaded in alphabetical order.
+The tilde (~) prefix in operator-generated filenames ensures they load near the end,
+giving them high precedence.
+
+### Additional Resources
+
+For a complete list of pgBackRest configuration options, see:
+- https://pgbackrest.org/configuration.html
+- https://pgbackrest.org/user-guide.html#quickstart/configure-stanza
 
 ---
 

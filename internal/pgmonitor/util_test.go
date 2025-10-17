@@ -6,6 +6,7 @@ package pgmonitor
 
 import (
 	"context"
+	"os"
 	"testing"
 
 	"gotest.tools/v3/assert"
@@ -43,4 +44,38 @@ func TestExporterEnabled(t *testing.T) {
 		},
 	}`)
 	assert.Assert(t, !ExporterEnabled(ctx, cluster))
+}
+
+func TestGetQueriesConfigDir(t *testing.T) {
+	ctx := context.Background()
+
+	t.Run("DefaultPath", func(t *testing.T) {
+		// Save and clear the environment variable
+		oldValue := os.Getenv("QUERIES_CONFIG_DIR")
+		os.Unsetenv("QUERIES_CONFIG_DIR")
+		defer func() {
+			if oldValue != "" {
+				os.Setenv("QUERIES_CONFIG_DIR", oldValue)
+			}
+		}()
+
+		dir := GetQueriesConfigDir(ctx)
+		assert.Equal(t, dir, "/opt/crunchy/conf")
+	})
+
+	t.Run("CustomPath", func(t *testing.T) {
+		// Save, set custom path, and restore after
+		oldValue := os.Getenv("QUERIES_CONFIG_DIR")
+		os.Setenv("QUERIES_CONFIG_DIR", "/custom/path")
+		defer func() {
+			if oldValue != "" {
+				os.Setenv("QUERIES_CONFIG_DIR", oldValue)
+			} else {
+				os.Unsetenv("QUERIES_CONFIG_DIR")
+			}
+		}()
+
+		dir := GetQueriesConfigDir(ctx)
+		assert.Equal(t, dir, "/custom/path")
+	})
 }

@@ -1,0 +1,12 @@
+# Task ID: 10
+# Title: Auto-Scaling Read Replicas
+# Status: done
+# Dependencies: None
+# Priority: medium
+# Description: Kubernetes HPA integration with multi-metric scaling
+# Details:
+File: /internal/controller/postgrescluster/autoscaling.go (700 lines)
+Multi-metric scaling (CPU, memory, connections, lag)
+
+# Test Strategy:
+Unit tests for HPA generation, integration tests for scaling behavior

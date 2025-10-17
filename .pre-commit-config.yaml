@@ -1,0 +1,121 @@
+# Pre-commit hooks for Postgres Operator (Go project)
+# This configuration ensures code quality and test coverage before commits
+
+repos:
+  # Go-specific hooks
+  - repo: https://github.com/golangci/golangci-lint
+    rev: v1.54.2
+    hooks:
+      - id: golangci-lint
+        name: golangci-lint
+        description: Run golangci-lint on Go files
+        entry: golangci-lint run
+        language: golang
+        types: [go]
+        args: [--timeout=5m]
+        stages: [commit]
+
+  # Go formatting
+  - repo: https://github.com/dnephin/pre-commit-golang
+    rev: v0.5.1
+    hooks:
+      - id: go-fmt
+        name: go fmt
+        description: Run go fmt on Go files
+        entry: gofmt
+        language: golang
+        types: [go]
+        args: [-w]
+
+      - id: go-imports
+        name: go imports
+        description: Run goimports on Go files
+        entry: goimports
+        language: golang
+        types: [go]
+        args: [-w]
+
+      - id: go-vet
+        name: go vet
+        description: Run go vet on Go files
+        entry: go vet
+        language: golang
+        types: [go]
+
+      - id: go-mod-tidy
+        name: go mod tidy
+        description: Run go mod tidy
+        entry: go mod tidy
+        language: golang
+        types: [go]
+
+  # Test coverage validation
+  - repo: local
+    hooks:
+      - id: go-test-coverage
+        name: Go Test Coverage
+        description: Run tests and validate coverage
+        entry: bash scripts/validate_100_coverage.sh
+        language: system
+        pass_filenames: false
+        always_run: true
+        stages: [commit]
+
+  # General code quality
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.4.0
+    hooks:
+      - id: trailing-whitespace
+        name: Trim Trailing Whitespace
+        description: Remove trailing whitespace
+        types: [text]
+
+      - id: end-of-file-fixer
+        name: Fix End of Files
+        description: Ensure files end with newline
+        types: [text]
+
+      - id: check-yaml
+        name: Check YAML
+        description: Check YAML syntax
+        types: [yaml]
+
+      - id: check-json
+        name: Check JSON
+        description: Check JSON syntax
+        types: [json]
+
+      - id: check-merge-conflict
+        name: Check for merge conflicts
+        description: Check for merge conflict markers
+        types: [text]
+
+      - id: check-added-large-files
+        name: Check for large files
+        description: Prevent large files from being committed
+        args: ['--maxkb=1000']
+
+  # Security checks
+  - repo: https://github.com/Yelp/detect-secrets
+    rev: v1.4.0
+    hooks:
+      - id: detect-secrets
+        name: Detect secrets
+        description: Detect potential secrets in code
+        args: ['--baseline', '.secrets.baseline']
+        exclude: '\.secrets\.baseline$'
+
+  # Documentation checks
+  - repo: https://github.com/pre-commit/mirrors-prettier
+    rev: v3.0.0
+    hooks:
+      - id: prettier
+        name: Prettier
+        description: Format markdown files
+        types: [markdown]
+        exclude: '^docs/.*\.md$'
+
+# Configuration
+default_stages: [commit]
+fail_fast: false
+minimum_pre_commit_version: '2.0.0'

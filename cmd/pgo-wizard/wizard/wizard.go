@@ -145,8 +145,7 @@ func RunCreateWizard(cmd *cobra.Command, args []string) error {
 ╔═══════════════════════════════════════════════════════════╗
 ║  PostgreSQL Cluster Creation Wizard                       ║
 ║  Crunchy Postgres Operator                                ║
-╚═══════════════════════════════════════════════════════════╝
-`)
+╚═══════════════════════════════════════════════════════════╝`)
 
 	config := &ClusterConfig{
 		Namespace: *Namespace,

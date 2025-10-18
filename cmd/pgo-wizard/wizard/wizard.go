@@ -555,13 +555,14 @@ func generateClusterSpec(config *ClusterConfig) (*v1beta1.PostgresCluster, error
 			},
 		},
 		Spec: v1beta1.PostgresClusterSpec{
-			PostgresVersion: config.PostgresVersion,
+			PostgresVersion: int32(config.PostgresVersion),
 			Image:           fmt.Sprintf("registry.developers.crunchydata.com/crunchydata/crunchy-postgres:ubi8-%d-latest", config.PostgresVersion),
 			InstanceSets: []v1beta1.PostgresInstanceSetSpec{
 				{
 					Name:     "instance1",
 					Replicas: int32Ptr(int32(config.Replicas)),
-					DataVolumeClaimSpec: corev1.PersistentVolumeClaimSpec{
+					DataVolumeClaimSpec: v1beta1.VolumeClaimSpecWithAutoGrow{
+						PersistentVolumeClaimSpec: corev1.PersistentVolumeClaimSpec{
 						AccessModes: []corev1.PersistentVolumeAccessMode{
 							corev1.ReadWriteOnce,
 						},
@@ -570,6 +571,7 @@ func generateClusterSpec(config *ClusterConfig) (*v1beta1.PostgresCluster, error
 								corev1.ResourceStorage: resource.MustParse(config.StorageSize),
 							},
 						},
+					},
 					},
 					Resources: corev1.ResourceRequirements{
 						Requests: corev1.ResourceList{
@@ -620,7 +622,7 @@ func generateClusterSpec(config *ClusterConfig) (*v1beta1.PostgresCluster, error
 		cluster.Spec.Monitoring = &v1beta1.MonitoringSpec{
 			PGMonitor: &v1beta1.PGMonitorSpec{
 				Exporter: &v1beta1.ExporterSpec{
-					Image: strPtr("registry.developers.crunchydata.com/crunchydata/crunchy-postgres-exporter:ubi8-latest"),
+					Image: "registry.developers.crunchydata.com/crunchydata/crunchy-postgres-exporter:ubi8-latest",
 				},
 			},
 		}
@@ -630,7 +632,7 @@ func generateClusterSpec(config *ClusterConfig) (*v1beta1.PostgresCluster, error
 	if config.EnablePgBouncer {
 		cluster.Spec.Proxy = &v1beta1.PostgresProxySpec{
 			PGBouncer: &v1beta1.PGBouncerPodSpec{
-				Image:    strPtr("registry.developers.crunchydata.com/crunchydata/crunchy-pgbouncer:ubi8-latest"),
+				Image:    "registry.developers.crunchydata.com/crunchydata/crunchy-pgbouncer:ubi8-latest",
 				Replicas: int32Ptr(2),
 			},
 		}

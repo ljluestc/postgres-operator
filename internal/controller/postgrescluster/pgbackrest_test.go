@@ -4916,3 +4916,134 @@ func TestGetCloudLogPath(t *testing.T) {
 		assert.Equal(t, getCloudLogPath(postgrescluster), "/volumes/test/log")
 	})
 }
+
+func TestBackupScheduleFound(t *testing.T) {
+	t.Run("NoBackupSchedules", func(t *testing.T) {
+		repo := v1beta1.PGBackRestRepo{
+			Name: "repo1",
+		}
+		assert.Assert(t, !backupScheduleFound(repo, full))
+		assert.Assert(t, !backupScheduleFound(repo, differential))
+		assert.Assert(t, !backupScheduleFound(repo, incremental))
+	})
+
+	t.Run("FullScheduleSet", func(t *testing.T) {
+		repo := v1beta1.PGBackRestRepo{
+			Name: "repo1",
+			BackupSchedules: &v1beta1.PGBackRestBackupSchedules{
+				Full: &testCronSchedule,
+			},
+		}
+		assert.Assert(t, backupScheduleFound(repo, full))
+		assert.Assert(t, !backupScheduleFound(repo, differential))
+		assert.Assert(t, !backupScheduleFound(repo, incremental))
+	})
+
+	t.Run("DifferentialScheduleSet", func(t *testing.T) {
+		repo := v1beta1.PGBackRestRepo{
+			Name: "repo1",
+			BackupSchedules: &v1beta1.PGBackRestBackupSchedules{
+				Differential: &testCronSchedule,
+			},
+		}
+		assert.Assert(t, !backupScheduleFound(repo, full))
+		assert.Assert(t, backupScheduleFound(repo, differential))
+		assert.Assert(t, !backupScheduleFound(repo, incremental))
+	})
+
+	t.Run("IncrementalScheduleSet", func(t *testing.T) {
+		repo := v1beta1.PGBackRestRepo{
+			Name: "repo1",
+			BackupSchedules: &v1beta1.PGBackRestBackupSchedules{
+				Incremental: &testCronSchedule,
+			},
+		}
+		assert.Assert(t, !backupScheduleFound(repo, full))
+		assert.Assert(t, !backupScheduleFound(repo, differential))
+		assert.Assert(t, backupScheduleFound(repo, incremental))
+	})
+
+	t.Run("AllSchedulesSet", func(t *testing.T) {
+		repo := v1beta1.PGBackRestRepo{
+			Name: "repo1",
+			BackupSchedules: &v1beta1.PGBackRestBackupSchedules{
+				Full:          &testCronSchedule,
+				Differential:  &testCronSchedule,
+				Incremental:   &testCronSchedule,
+			},
+		}
+		assert.Assert(t, backupScheduleFound(repo, full))
+		assert.Assert(t, backupScheduleFound(repo, differential))
+		assert.Assert(t, backupScheduleFound(repo, incremental))
+	})
+
+	t.Run("InvalidBackupType", func(t *testing.T) {
+		repo := v1beta1.PGBackRestRepo{
+			Name: "repo1",
+			BackupSchedules: &v1beta1.PGBackRestBackupSchedules{
+				Full: &testCronSchedule,
+			},
+		}
+		assert.Assert(t, !backupScheduleFound(repo, "invalid"))
+	})
+}
+
+func TestAuthorizeBackupRemovalAnnotationPresent(t *testing.T) {
+	t.Run("NoAnnotations", func(t *testing.T) {
+		cluster := &v1beta1.PostgresCluster{
+			ObjectMeta: metav1.ObjectMeta{
+				Name: "test-cluster",
+			},
+		}
+		assert.Assert(t, !authorizeBackupRemovalAnnotationPresent(cluster))
+	})
+
+	t.Run("AnnotationPresentTrue", func(t *testing.T) {
+		cluster := &v1beta1.PostgresCluster{
+			ObjectMeta: metav1.ObjectMeta{
+				Name: "test-cluster",
+				Annotations: map[string]string{
+					naming.AuthorizeBackupRemovalAnnotation: "true",
+				},
+			},
+		}
+		assert.Assert(t, authorizeBackupRemovalAnnotationPresent(cluster))
+	})
+
+	t.Run("AnnotationPresentFalse", func(t *testing.T) {
+		cluster := &v1beta1.PostgresCluster{
+			ObjectMeta: metav1.ObjectMeta{
+				Name: "test-cluster",
+				Annotations: map[string]string{
+					naming.AuthorizeBackupRemovalAnnotation: "false",
+				},
+			},
+		}
+		assert.Assert(t, !authorizeBackupRemovalAnnotationPresent(cluster))
+	})
+
+	t.Run("AnnotationPresentInvalidValue", func(t *testing.T) {
+		cluster := &v1beta1.PostgresCluster{
+			ObjectMeta: metav1.ObjectMeta{
+				Name: "test-cluster",
+				Annotations: map[string]string{
+					naming.AuthorizeBackupRemovalAnnotation: "yes",
+				},
+			},
+		}
+		assert.Assert(t, !authorizeBackupRemovalAnnotationPresent(cluster))
+	})
+
+	t.Run("OtherAnnotationsPresent", func(t *testing.T) {
+		cluster := &v1beta1.PostgresCluster{
+			ObjectMeta: metav1.ObjectMeta{
+				Name: "test-cluster",
+				Annotations: map[string]string{
+					"some-other-annotation": "value",
+					"another-annotation":    "another-value",
+				},
+			},
+		}
+		assert.Assert(t, !authorizeBackupRemovalAnnotationPresent(cluster))
+	})
+}

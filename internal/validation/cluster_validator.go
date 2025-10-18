@@ -249,7 +249,7 @@ func (r *BackupConfigurationRule) Validate(cluster *v1beta1.PostgresCluster) []V
 		}
 
 		// Check for retention policy
-		if repo.RetentionPolicy == nil || *repo.RetentionPolicy == "" {
+		if repo.RetentionFull == nil || *repo.RetentionFull == 0 {
 			results = append(results, ValidationResult{
 				Level:   ValidationLevelWarning,
 				Field:   fmt.Sprintf("spec.backups.pgbackrest.repos[%d].retentionPolicy", i),
@@ -314,7 +314,7 @@ func (r *HighAvailabilityRule) Validate(cluster *v1beta1.PostgresCluster) []Vali
 	}
 
 	// Check pod disruption budget
-	if cluster.Spec.DisruptionBudget == nil || cluster.Spec.DisruptionBudget.MinAvailable == nil {
+	if len(cluster.Spec.Instances) == 0 || cluster.Spec.Instances[0].DisruptionBudget == nil || cluster.Spec.Instances[0].DisruptionBudget.MinAvailable == nil {
 		results = append(results, ValidationResult{
 			Level:   ValidationLevelWarning,
 			Field:   "spec.disruptionBudget",
@@ -366,7 +366,7 @@ func (r *PostgreSQLVersionRule) Validate(cluster *v1beta1.PostgresCluster) []Val
 		12: "EOL November 14, 2024",
 	}
 
-	if eolDate, isEOL := eolVersions[cluster.Spec.PostgresVersion]; isEOL {
+	if eolDate, isEOL := eolVersions[int(cluster.Spec.PostgresVersion)]; isEOL {
 		results = append(results, ValidationResult{
 			Level:   ValidationLevelWarning,
 			Field:   "spec.postgresVersion",
@@ -479,8 +479,8 @@ func (r *NetworkPolicyRule) Validate(cluster *v1beta1.PostgresCluster) []Validat
 	results := []ValidationResult{}
 
 	// Check service exposure
-	if cluster.Spec.Service != nil && cluster.Spec.Service.Type != nil {
-		if *cluster.Spec.Service.Type == corev1.ServiceTypeLoadBalancer {
+	if cluster.Spec.Service != nil && cluster.Spec.Service.Type != "" {
+		if cluster.Spec.Service.Type == corev1.ServiceTypeLoadBalancer {
 			results = append(results, ValidationResult{
 				Level:   ValidationLevelWarning,
 				Field:   "spec.service.type",
@@ -540,8 +540,8 @@ func (r *PerformanceRule) Validate(cluster *v1beta1.PostgresCluster) []Validatio
 	results := []ValidationResult{}
 
 	// Check PostgreSQL parameters
-	if cluster.Spec.PostgresConfiguration != nil {
-		params := cluster.Spec.PostgresConfiguration.Parameters
+	if cluster.Spec.Config != nil {
+		params := cluster.Spec.Config.Parameters
 
 		// Check shared_buffers
 		if sharedBuffers, ok := params["shared_buffers"]; ok {

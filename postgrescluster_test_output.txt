@@ -1,0 +1,1 @@
+ok  	github.com/crunchydata/postgres-operator/internal/controller/postgrescluster	0.059s	coverage: 26.5% of statements

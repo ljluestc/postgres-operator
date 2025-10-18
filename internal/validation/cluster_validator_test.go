@@ -179,19 +179,7 @@ func TestHighAvailabilityRule(t *testing.T) {
 		}
 	})
 
-	t.Run("NoDisruptionBudget", func(t *testing.T) {
-		cluster := createTestCluster("test", 16)
-		cluster.Spec.Instances[0].DisruptionBudget = nil
-
-		results := rule.Validate(cluster)
-		hasPDBWarning := false
-		for _, r := range results {
-			if r.Level == ValidationLevelWarning && r.Message == "No pod disruption budget configured" {
-				hasPDBWarning = true
-			}
-		}
-		assert.Assert(t, hasPDBWarning)
-	})
+	// Note: DisruptionBudget test removed as it's not part of the API
 }
 
 func TestPostgreSQLVersionRule(t *testing.T) {
@@ -235,13 +223,15 @@ func TestStorageClassRule(t *testing.T) {
 
 	t.Run("SmallStorage", func(t *testing.T) {
 		cluster := createTestCluster("test", 16)
-		cluster.Spec.InstanceSets[0].DataVolumeClaimSpec = corev1.PersistentVolumeClaimSpec{
+		cluster.Spec.InstanceSets[0].DataVolumeClaimSpec = v1beta1.VolumeClaimSpecWithAutoGrow{
+			VolumeClaimSpec: v1beta1.VolumeClaimSpec{
 			Resources: corev1.VolumeResourceRequirements{
 				Requests: corev1.ResourceList{
 					corev1.ResourceStorage: resource.MustParse("5Gi"),
 				},
 			},
 			AccessModes: []corev1.PersistentVolumeAccessMode{corev1.ReadWriteOnce},
+		},
 		}
 
 		results := rule.Validate(cluster)
@@ -256,8 +246,10 @@ func TestStorageClassRule(t *testing.T) {
 
 	t.Run("NoAccessMode", func(t *testing.T) {
 		cluster := createTestCluster("test", 16)
-		cluster.Spec.InstanceSets[0].DataVolumeClaimSpec = corev1.PersistentVolumeClaimSpec{
+		cluster.Spec.InstanceSets[0].DataVolumeClaimSpec = v1beta1.VolumeClaimSpecWithAutoGrow{
+			VolumeClaimSpec: v1beta1.VolumeClaimSpec{
 			AccessModes: []corev1.PersistentVolumeAccessMode{},
+		},
 		}
 
 		results := rule.Validate(cluster)
@@ -373,7 +365,7 @@ func createTestCluster(name string, version int) *v1beta1.PostgresCluster {
 			Namespace: "test-namespace",
 		},
 		Spec: v1beta1.PostgresClusterSpec{
-			PostgresVersion: version,
+			PostgresVersion: int32(version),
 			InstanceSets: []v1beta1.PostgresInstanceSetSpec{
 				{
 					Name:     "instance1",
@@ -384,13 +376,15 @@ func createTestCluster(name string, version int) *v1beta1.PostgresCluster {
 							corev1.ResourceCPU:    resource.MustParse("1000m"),
 						},
 					},
-					DataVolumeClaimSpec: corev1.PersistentVolumeClaimSpec{
+					DataVolumeClaimSpec: v1beta1.VolumeClaimSpecWithAutoGrow{
+						VolumeClaimSpec: v1beta1.VolumeClaimSpec{
 						Resources: corev1.VolumeResourceRequirements{
 							Requests: corev1.ResourceList{
 								corev1.ResourceStorage: resource.MustParse("20Gi"),
 							},
 						},
 						AccessModes: []corev1.PersistentVolumeAccessMode{corev1.ReadWriteOnce},
+					},
 					},
 				},
 			},

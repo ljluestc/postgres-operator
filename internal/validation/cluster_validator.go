@@ -12,7 +12,6 @@ import (
 
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
-	"k8s.io/apimachinery/pkg/util/validation/field"
 
 	"github.com/crunchydata/postgres-operator/pkg/apis/postgres-operator.crunchydata.com/v1beta1"
 )
@@ -248,17 +247,8 @@ func (r *BackupConfigurationRule) Validate(cluster *v1beta1.PostgresCluster) []V
 			}
 		}
 
-		// Check for retention policy
-		if repo.RetentionFull == nil || *repo.RetentionFull == 0 {
-			results = append(results, ValidationResult{
-				Level:   ValidationLevelWarning,
-				Field:   fmt.Sprintf("spec.backups.pgbackrest.repos[%d].retentionPolicy", i),
-				Message: "No retention policy configured",
-				Recommendation: "Set retention policy to prevent unlimited backup growth: " +
-					"e.g., '--repo1-retention-full=14'",
-				Rule: r.Name(),
-			})
-		}
+		// Note: Retention policies are configured via pgBackRest configuration
+		// and not directly in the API spec
 	}
 
 	if !hasFullBackup {
@@ -313,16 +303,8 @@ func (r *HighAvailabilityRule) Validate(cluster *v1beta1.PostgresCluster) []Vali
 		})
 	}
 
-	// Check pod disruption budget
-	if len(cluster.Spec.Instances) == 0 || cluster.Spec.Instances[0].DisruptionBudget == nil || cluster.Spec.Instances[0].DisruptionBudget.MinAvailable == nil {
-		results = append(results, ValidationResult{
-			Level:   ValidationLevelWarning,
-			Field:   "spec.disruptionBudget",
-			Message: "No pod disruption budget configured",
-			Recommendation: "Configure minAvailable to protect against simultaneous pod evictions during cluster maintenance",
-			Rule:            r.Name(),
-		})
-	}
+	// Note: Pod Disruption Budgets are not directly configurable in the API
+	// They would need to be created separately via Kubernetes manifests
 
 	// Check affinity rules
 	for i, instance := range cluster.Spec.InstanceSets {
@@ -480,7 +462,7 @@ func (r *NetworkPolicyRule) Validate(cluster *v1beta1.PostgresCluster) []Validat
 
 	// Check service exposure
 	if cluster.Spec.Service != nil && cluster.Spec.Service.Type != "" {
-		if cluster.Spec.Service.Type == corev1.ServiceTypeLoadBalancer {
+		if cluster.Spec.Service.Type == string(corev1.ServiceTypeLoadBalancer) {
 			results = append(results, ValidationResult{
 				Level:   ValidationLevelWarning,
 				Field:   "spec.service.type",
@@ -545,7 +527,8 @@ func (r *PerformanceRule) Validate(cluster *v1beta1.PostgresCluster) []Validatio
 
 		// Check shared_buffers
 		if sharedBuffers, ok := params["shared_buffers"]; ok {
-			if !strings.Contains(sharedBuffers, "MB") && !strings.Contains(sharedBuffers, "GB") {
+			sharedBuffersStr := sharedBuffers.String()
+			if !strings.Contains(sharedBuffersStr, "MB") && !strings.Contains(sharedBuffersStr, "GB") {
 				results = append(results, ValidationResult{
 					Level:          ValidationLevelWarning,
 					Field:          "spec.postgresConfiguration.parameters.shared_buffers",

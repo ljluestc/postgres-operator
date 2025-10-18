@@ -562,7 +562,7 @@ func generateClusterSpec(config *ClusterConfig) (*v1beta1.PostgresCluster, error
 					Name:     "instance1",
 					Replicas: int32Ptr(int32(config.Replicas)),
 					DataVolumeClaimSpec: v1beta1.VolumeClaimSpecWithAutoGrow{
-						PersistentVolumeClaimSpec: corev1.PersistentVolumeClaimSpec{
+						VolumeClaimSpec: v1beta1.VolumeClaimSpec{
 						AccessModes: []corev1.PersistentVolumeAccessMode{
 							corev1.ReadWriteOnce,
 						},
@@ -599,7 +599,8 @@ func generateClusterSpec(config *ClusterConfig) (*v1beta1.PostgresCluster, error
 			{
 				Name: "repo1",
 				Volume: &v1beta1.RepoPVC{
-					VolumeClaimSpec: corev1.PersistentVolumeClaimSpec{
+					VolumeClaimSpec: v1beta1.VolumeClaimSpecWithAutoGrow{
+						VolumeClaimSpec: v1beta1.VolumeClaimSpec{
 						AccessModes: []corev1.PersistentVolumeAccessMode{
 							corev1.ReadWriteOnce,
 						},
@@ -608,6 +609,7 @@ func generateClusterSpec(config *ClusterConfig) (*v1beta1.PostgresCluster, error
 								corev1.ResourceStorage: resource.MustParse("10Gi"),
 							},
 						},
+					},
 					},
 				},
 				BackupSchedules: &v1beta1.PGBackRestBackupSchedules{

@@ -310,6 +310,80 @@ kubectl exec <instance-pod> -c database -- pgbackrest server-ping
 - Data directory not populated
 - Cluster stuck in recovery mode
 
+### Full Backup/Restore with pgBackRest (S3-Compatible Repositories)
+
+If you want a self-contained full restore workflow (similar in intent to a full
+logical dump/restore cycle, but physical and pgBackRest-based), you can do it in
+either of these two ways:
+
+1. **Create a new cluster from a pgBackRest repository** (clone-style restore)
+2. **Run an in-place restore on an existing cluster**
+
+Both approaches work with `spec.backups.pgbackrest` repositories, including S3.
+
+#### Option A: Create a New Cluster from Existing Backups
+
+Use `spec.dataSource.postgresCluster` to bootstrap a new `PostgresCluster` from
+backups in a source cluster repository.
+
+```yaml
+apiVersion: postgres-operator.crunchydata.com/v1beta1
+kind: PostgresCluster
+metadata:
+  name: restored-cluster
+spec:
+  postgresVersion: 16
+  dataSource:
+    postgresCluster:
+      clusterName: source-cluster
+      repoName: repo1
+      # Optional restore options:
+      # options:
+      #   - --type=default
+  instances:
+    - name: instance1
+      replicas: 1
+      dataVolumeClaimSpec:
+        accessModes: ["ReadWriteOnce"]
+        resources:
+          requests:
+            storage: 10Gi
+  backups:
+    pgbackrest:
+      repos:
+        - name: repo1
+          s3:
+            bucket: my-backup-bucket
+            endpoint: s3.amazonaws.com
+            region: us-east-1
+```
+
+#### Option B: In-Place Restore Using `spec.backups.pgbackrest.restore`
+
+For an existing cluster, enable in-place restore and set the restore source repo.
+For a full restore target, use default restore semantics (latest valid backup set).
+
+```yaml
+spec:
+  backups:
+    pgbackrest:
+      restore:
+        enabled: true
+        repoName: repo1
+        # Optional restore options for explicit control:
+        # options:
+        #   - --type=default
+```
+
+#### Notes
+
+- Full restores with pgBackRest are **physical** restores (cluster-level data
+  files), not logical exports like `pg_dump`.
+- You do **not** need PITR options (`--type=time`, `--target=...`) for a standard
+  full restore.
+- Ensure `repoName` points at the repository containing the desired full backup
+  chain.
+
 ### Diagnosis Steps
 
 #### 1. Check Restore Configuration
